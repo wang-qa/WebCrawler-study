@@ -2,7 +2,7 @@
 使用简单函数实现学生管理系统
 
 ***************************
-欢迎使用【学生管理系统】 V0.0.1
+欢迎使用【学生管理系统】 V0.0.2
     1. 显示所有学生信息
     2. 查询学生信息
     3. 添加学生信息
@@ -53,22 +53,50 @@ student_date = [
 
 ]
 
+
+# 美化展示list
+def beauty_print(data_list):
+    for index, student in enumerate(data_list):  # 自定义打印格式   index索引 enumerate()枚举
+        print(f'序号：{index}', end='\t')
+        print(f'姓名：{student["name"]}', end='\t')
+        print(f'性别：{student["sex"]}', end='\t')
+        print(f'年龄：{student["age"]}', end='\t')
+        print(f'城市：{student["city"]}', end='\n')
+
+
+# 输入校验
+def input_name():
+    while True:
+        name = input("姓名 > ").split()  # 去除字符串 空格
+        if name:  # 不为空
+            return name  # 返回姓名
+        else:
+            continue  # 持续循环
+
+
+def choose_sex():
+    while True:
+        print(" [1]男 | [2]女 ")
+        sex = input("选择性别 > ")
+        if sex == str(1):
+            return "男"
+        elif sex == str(2):
+            return "女"
+        else:
+            continue  # 持续循环
+
+
 ''' 封装函数 '''
-
-
-def step():
-    1
 
 
 # 1. 显示所有学生信息
 def show_all():
-    for student in student_date:
-        print(student)
+    beauty_print(student_date)
 
 
 # 2. 查询学生信息
 def find_student():
-    name = input("输入查询的学生姓名 > ")
+    name = input("查询 ==> ")
     for student in student_date:  # 遍历 date
         if student['name'] == name:  # 如果 学生姓名与输入的一致
             print(student)
@@ -79,9 +107,9 @@ def find_student():
 
 # 3. 添加学生信息
 def create_student():
-    print("新增学生信息 ==>")
-    name = input("姓名 > ")
-    sex = input("性别 > ")
+    print("新增 ==>")
+    name = input_name()
+    sex = choose_sex()
     age = input("年龄 > ")
     city = input("所在地 > ")
     student = {
@@ -96,7 +124,7 @@ def create_student():
 
 # 4. 修改学生信息
 def modify_student():
-    name = input("输入查询的学生姓名 > ")
+    name = input("修改 ==> ")
     for student in student_date:  # 遍历 date
         if student['name'] == name:  # 如果 学生姓名与输入的一致
             print(student)
@@ -111,7 +139,7 @@ def modify_student():
 
 # 5. 删除学生信息
 def remove_student():
-    name = input("输入查询的学生姓名 > ")
+    name = input("刪除 ==> ")
     for student in student_date:  # 遍历 date
         if student['name'] == name:  # 如果 学生姓名与输入的一致
             print(student)
@@ -127,7 +155,7 @@ def remove_student():
 while True:
     print("""
         ****************************
-        欢迎使用【学生管理系统】 V0.0.1
+        欢迎使用【学生管理系统】 V0.0.2
             1. 显示所有学生信息
             2. 查询学生信息
             3. 添加学生信息
