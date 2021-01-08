@@ -64,30 +64,7 @@ class Student:
             return "保密"
 
 
-# 系统类
-class StudentSystem:
-    ''' 系统实现与加载数据 '''
-
-    # 系统初始化
-    def __init__(self, name):
-        self.name = name  # 系统名称
-        self.data = []
-
-    # 实现 加载数据
-    def load_date(self):
-        for studentinfo in student_date:  # 遍历数据
-            student = Student(studentinfo['name'], studentinfo['sex'], studentinfo['birthday'])  # 实例化对象
-            self.data.append(student)  # 列表追加
-
-    # 美化输出
-    def beauty_print(self, data_list):
-        for index, student in enumerate(data_list):  # 自定义打印格式   index索引 enumerate()枚举
-            print(f'序号：{index}', end='\t')
-            print(f'姓名：{student.name}', end='\t')
-            print(f'性别：{student.sex:2}', end='\t')  # 指定长度
-            print(f'生日：{student.birthday}', end='\t')
-            print(f'年龄：{student.get_age()}')
-
+class Model:  # info:校验 格式
     # 校验 姓名
     def input_name(self):
         while True:
@@ -100,18 +77,46 @@ class StudentSystem:
     # 校验 性别
     def choose_sex(self):
         while True:
-            sex = input("选择性别 > [1]男 | [2]女").split()  # 去除输入的空格
-            if sex == "1":
+            sex = input("选择性别 > [1]男 | [2]女 > ").strip()  # 去除输入的空格
+            if sex:  # 不为空
+                return "未识别"
+            elif sex == "1":
                 return "男"
             elif sex == "2":
                 return "女"
             else:  # 未输入
-                return "未知"
+                return "not write"
+
+    # 美化输出
+    def beauty_print(self, data_list):
+        for index, student in enumerate(data_list):  # 自定义打印格式   index索引 enumerate()枚举
+            print(f'序号：{index}', end='\t')
+            print(f'姓名：{student.name}', end='\t')
+            print(f'性别：{student.sex:2}', end='\t')  # 指定长度
+            print(f'生日：{student.birthday}', end='\t')
+            print(f'年龄：{student.get_age()}')
+
+
+# 系统类
+class StudentSystem:
+    """ 系统实现与加载数据 """
+
+    # 系统初始化
+    def __init__(self, name):
+        self.name = name  # 系统名称
+        self.data = []
+
+    # 实现 加载数据
+    def load_date(self):
+        for studentinfo in student_date:  # 遍历数据
+            student = Student(studentinfo['name'], studentinfo['sex'], studentinfo['birthday'])  # 实例化对象
+            self.data.append(student)  # 列表追加
+
+    model = Model()  # 实例化 模版
 
     # 查找 根据姓名
-
     def find_student_by_name(self):
-        name = self.input_name()
+        name = self.model.input_name()
         find_list = []  # 可能有多个结果
         for student in self.data:  # 遍历 date 查找
             if name.lower() in student.name.lower():  # 如果 学生姓名与输入的一致
@@ -166,7 +171,7 @@ class StudentSystem:
     def show_all_student(self):
         print(" ==> 查询 all ")
         # for student in self.data: # 在`beauty_print`中已遍历 此处不需要
-        self.beauty_print(self.data)
+        self.model.beauty_print(self.data)
 
     # 2. 查询学生信息
     def find_student(self):
@@ -182,13 +187,13 @@ class StudentSystem:
         # # 优化封装为`find_list`
         find_list = self.find_student_by_name()
         if find_list:
-            self.beauty_print(find_list)
+            self.model.beauty_print(find_list)
 
     # 3. 添加学生信息
     def create_student(self):
         print(" ==> 新增 ")
-        name = self.input_name()
-        sex = self.choose_sex()
+        name = self.model.input_name()
+        sex = self.model.choose_sex()
         birthdady = input("生日 > ")
         student = Student(name, sex, birthdady)
         self.data.append(student)  # 追加 ==> 学生数据
@@ -199,13 +204,13 @@ class StudentSystem:
         print(" ==> 修改")
         find_list = self.find_student_by_name()
         if find_list:
-            self.beauty_print(find_list)
+            self.model.beauty_print(find_list)
             index = int(input("修改序号 > "))
             student = find_list[index]
             print("\n 当前修改的是 >>>")
-            self.beauty_print([student])
+            self.model.beauty_print([student])
             name = input("new name : ").strip()
-            sex = self.choose_sex()
+            sex = self.model.choose_sex()
             birthday = input("new birhtday : ")
             if name:
                 student.name = name
@@ -217,11 +222,11 @@ class StudentSystem:
         print(" ==> 刪除")
         find_list = self.find_student_by_name()
         if find_list:
-            self.beauty_print(find_list)
+            self.model.beauty_print(find_list)
             index = int(input("remove ID > "))
             print("\n remove 的是 >>>")
             student = find_list[index]
-            self.beauty_print([student])
+            self.model.beauty_print([student])
             self.data.remove(student)
             print("remove success")
 
