@@ -4,34 +4,6 @@ import sqlite3 as sl  # 使用轻量级 SQLite
 
 # 初始化数据库 添加初始数据
 class Demo_data:
-    student_date = [
-        {
-            'name': '小红',
-            'sex': '女',
-            'birthday': '20010101'
-        },
-        {
-            'name': '张三',
-            'sex': '男',
-            'birthday': '20140102'
-        },
-        {
-            'name': 'Marry',
-            'sex': '女',
-            'birthday': '20110103'
-        },
-        {
-            'name': 'marry',
-            'sex': '男',
-            'birthday': '202160104'
-        },
-        {
-            'name': 'tom',
-            'sex': '男',
-            'birthday': '20000105'
-        },
-
-    ]
 
     def __init__(self):
         # 数据库 初始化连接
@@ -65,37 +37,6 @@ class Demo_data:
             self.con.executemany(sql, data)
 
 
-# 模拟数据
-student_date = [
-    {
-        'name': '小红',
-        'sex': '女',
-        'birthday': '20010101'
-    },
-    {
-        'name': '张三',
-        'sex': '男',
-        'birthday': '20140102'
-    },
-    {
-        'name': 'Marry',
-        'sex': '女',
-        'birthday': '20110103'
-    },
-    {
-        'name': 'marry',
-        'sex': '男',
-        'birthday': '202160104'
-    },
-    {
-        'name': 'tom',
-        'sex': '男',
-        'birthday': '20000105'
-    },
-
-]
-
-
 # 学生类
 class Student:
     '''学生信息'''
@@ -114,6 +55,39 @@ class Student:
             return age
         else:
             return "保密"
+
+
+# 数据库语句
+class DB_sql:
+    def find_all(self):  # 查找-全部
+        sql_find_all = f"SELECT * FROM StudentINFO "
+        print("sql: find_all success  ==> ", sql_find_all)
+        return sql_find_all
+
+    def find_only(self, name):  # 查找-匹配
+        sql_find_only = f"SELECT * FROM StudentINFO where name LIKE '%{name}%'"
+        print("sql: find_only success  ==> ", sql_find_only)
+        return sql_find_only
+
+    def add_only(self, name, sex, birthday):  # 添加
+        sql_insert = f"-- INSERT INTO StudentINFO (name,sex,birthday)  VALUES ('{name}','{sex}','{birthday}')"
+        print("sql: update success  ==> ", sql_insert)
+        return sql_insert
+
+    def update_only(self, name, sex, birthday, find_name):  # 更新
+        sql_update = f"UPDATE StudentINFO SET name='{name}',sex= '{sex}',birthday='{birthday}' where name='{find_name}'"
+        print("sql: update success  ==> ", sql_update)
+        return sql_update
+
+    def delete_only(self, find_name):  # 删除
+        sql_delete = f"DELETE FROM StudentINFO where name = '{find_name}'"
+        print("sql: delete success  ==> ", sql_delete)
+        return sql_delete
+
+    def find_max_id(self):  # 查找最新id
+        sql_find_maxid = f"SELECT * FROM StudentINFO order by id desc limit 1"
+        print("sql: find maxID success  ==> ", sql_find_maxid)
+        return sql_find_maxid
 
 
 class Model:  # info:校验 格式
@@ -139,15 +113,6 @@ class Model:  # info:校验 格式
             else:  # 未输入
                 return "not write"
 
-    # 美化输出
-    def beauty_print(self, data_list):
-        for index, student in enumerate(data_list):  # 自定义打印格式   index索引 enumerate()枚举
-            print(f'序号：{index}', end='\t')
-            print(f'姓名：{student.name}', end='\t')
-            print(f'性别：{student.sex:2}', end='\t')  # 指定长度
-            print(f'生日：{student.birthday}', end='\t')
-            print(f'年龄：{student.get_age()}')
-
 
 # 系统类
 class StudentSystem:
@@ -155,30 +120,20 @@ class StudentSystem:
 
     # 系统初始化
     def __init__(self, name):
-        self.con = sl.connect('my-test.db')
         self.name = name  # 系统名称
-        self.data = []
 
-    # 实现 加载数据
-    def load_date(self):
-        for studentinfo in student_date:  # 遍历数据
-            student = Student(studentinfo['name'], studentinfo['sex'], studentinfo['birthday'])  # 实例化对象
-            self.data.append(student)  # 列表追加
+        # 数据库 connect 返回字典
+        def dict_factory(cursor, row):
+            d = {}
+            for index, col in enumerate(cursor.description):
+                d[col[0]] = row[index]
+            return d
+
+        self.con = sl.connect('my-test.db')  # 轻量级 如果不存在则自动创建并连接
+        self.con.row_factory = dict_factory
 
     model = Model()  # 实例化 模版
-
-    # 查找 根据姓名
-    def find_student_by_name(self):
-        name = self.model.input_name()
-        find_list = []  # 可能有多个结果
-        for student in self.data:  # 遍历 date 查找
-            if name.lower() in student.name.lower():  # 如果 学生姓名与输入的一致
-                find_list.append(student)
-
-        if find_list:  # 结果为真
-            return find_list  # 返回 find_list
-        else:  # 结果为假
-            print(f' 查询失败 ---< {name} >--- 不存在')
+    sql = DB_sql()
 
     # 显示菜单
     def show_menu(self):  # 定义菜单
@@ -197,7 +152,6 @@ class StudentSystem:
 
     # 启动系统
     def start(self):
-        self.load_date()  # 系统启动 加载数据
         while True:  # 一直运行
             self.show_menu()  # 调用菜单功能函数
             operation = input("选择操作：")
@@ -222,41 +176,24 @@ class StudentSystem:
 
     # 1.所有学生信息
     def show_all_student(self):
-        print(" ==> 查询 all ")
-        # for student in self.data: # 在`beauty_print`中已遍历 此处不需要
-        self.model.beauty_print(self.data)
+        print(" ==> 查询 all ", self.sql.find_all())
         with self.con:
             print("--------------------sql_find_all--------------------")
-            sql_find_all = f"SELECT name,sex,birthday FROM StudentINFO "
-            print(sql_find_all)
-            data_findall_end = self.con.execute(sql_find_all).fetchall()  # sql run end
+            data_findall_end = self.con.execute(self.sql.find_all()).fetchall()  # sql run end
             # 格式化打印
             for index, list_sql in enumerate(data_findall_end):
-                print(f"序号: {index + 1}  姓名: {list_sql[0]:6} 性别: {list_sql[1]} 生日: {list_sql[2]}")
+                print(f"序号: {index + 1} 姓名: {list_sql['name']:7} 性别: {list_sql['sex']:4} 生日: {list_sql['birthday']}")
 
     # 2. 查询学生信息
     def find_student(self):
         print(" ==> 查询 ")
-        # for student in self.data:  # 遍历 date
-        #     if student.name == name:  # 如果 学生姓名与输入的一致
-        #         self.beauty_print([student])
-
-        # else:  # 遍历 date 未找到
-        #     print('查无此人 查询失败')
-
-        # # 优化封装为`find_list`
-        # find_list = self.find_student_by_name()
-        # if find_list:
-        #     self.model.beauty_print(find_list)
         name = self.model.input_name()
         with self.con:
             print("--------------------sql_find_allonly--------------------")
-            sql_find_only = f"SELECT * FROM StudentINFO where name LIKE '%{name}%'"
-            print(sql_find_only)
-            data_findonly_end = self.con.execute(sql_find_only).fetchall()  # sql run end
+            data_findonly_end = self.con.execute(self.sql.find_only(name)).fetchall()  # sql run end
             # 格式化打印
             for index, list_sql in enumerate(data_findonly_end):
-                print(f"序号: {index + 1}  姓名: {list_sql[1]:6} 性别: {list_sql[2]} 生日: {list_sql[3]}")
+                print(f"序号: {index + 1}  姓名: {list_sql['name']:6} 性别: {list_sql['sex']} 生日: {list_sql['birthday']}")
 
     # 3. 添加学生信息
     def create_student(self):
@@ -264,60 +201,37 @@ class StudentSystem:
         name = self.model.input_name()
         sex = self.model.choose_sex()
         birthday = input("生日 > ")
-        # student = Student(name, sex, birthday)
-        # self.data.append(student)  # 追加 ==> 学生数据
         print(sex)
         with self.con:
             print("--------------------sql_insert--------------------")
-            # 插入信息
-            sql_insert = f"INSERT INTO StudentINFO (name,sex,birthday)  VALUES ('{name}','{sex}','{birthday}')"
-            print(sql_insert)  # sql run end
-            # 查找插入内容 回显
-            sql_find_only = f"select * from StudentINFO order by id desc limit 1"
-            data_end_insert = self.con.execute(sql_find_only).fetchall()
-            print(data_end_insert)  # sql run end
+            # 插入信息 回显
+            self.con.execute(self.sql.add_only(name, sex, birthday)).fetchall()
+            data_find_maxid = self.con.execute(self.sql.find_max_id()).fetchall()
             # 格式化打印
-            for index, list_sql in enumerate(data_end_insert):
-                print(f"新增信息 ==>序号: {index + 1}  姓名: {list_sql[1]:6} 性别: {list_sql[2]} 生日: {list_sql[3]}")
-
-        print("新增学生信息 ==> success")
+            for index, list_sql in enumerate(data_find_maxid):
+                print(
+                    f"最新信息 ==>序号: {index + 1}  姓名: {list_sql['name']:6} 性别: {list_sql['sex']} 生日: {list_sql['birthday']}")
+        # print("新增学生信息 ==> success")
 
     # 4. 修改学生信息
     def modify_student(self):
         print(" ==> 修改")
-        # find_list = self.find_student_by_name()
-        # if find_list:
-        #     self.model.beauty_print(find_list)
-        #     index = int(input("修改序号 > "))
-        #     student = find_list[index]
-        #     print("\n 当前修改的是 >>>")
-        #     self.model.beauty_print([student])
-        #     name = input("new name : ").strip()
-        #     sex = self.model.choose_sex()
-        #     birthday = input("new birhtday : ")
-        #     if name:
-        #         student.name = name
-        #     student.sex = sex
-        #     student.birthday = birthday
         with self.con:
             print("--------------------sql_update--------------------")
             find_name = input("查找对应姓名")
             # 先模糊找数据
-            sql_find_only = f"SELECT * FROM StudentINFO where name like '%{find_name}%'"
-            data_find_only = self.con.execute(sql_find_only).fetchall()
-            print(data_find_only)  # sql run end
+            data_find_only = self.con.execute(self.sql.find_only(find_name)).fetchall()
             # 格式化打印
             for index, list_sql in enumerate(data_find_only):
-                print(f"信息 ==>序号: {index + 1}  姓名: {list_sql[1]:6} 性别: {list_sql[2]} 生日: {list_sql[3]}")
-                print("--------------------")
+                print(
+                    f"找到信息 ==> 序号: {index + 1}  姓名: {list_sql['name']:6} 性别: {list_sql['sex']} 生日: {list_sql['birthday']}")
             # 输入准确信息
             name = input("new name : ").strip()
             if name:
                 new_name = name
             sex = self.model.choose_sex()
             birthday = input("new birhtday : ")
-            sql_update = f"UPDATE StudentINFO SET name='{name}',sex= '{sex}',birthday='{birthday}' where name='{list_sql[1]}'"
-            data_update_only = self.con.execute(sql_update).fetchall()
+            data_update_only = self.con.execute(self.sql.update_only(name, sex, birthday, find_name)).fetchall()
             print(data_update_only)  # sql run end
             print("--------------------")
             # 查找修改后的数据
@@ -326,21 +240,13 @@ class StudentSystem:
             print(data_find_only2)
             # 格式化打印
             for index, list_sql in enumerate(data_find_only2):
-                print(f"信息 ==>序号: {index + 1}  姓名: {list_sql[1]:6} 性别: {list_sql[2]} 生日: {list_sql[3]}")
+                print(
+                    f"信息 ==>序号: {index + 1}  姓名: {list_sql['name']:6} 性别: {list_sql['sex']} 生日: {list_sql['birthday']}")
             ''' 脑袋疼 绕迷糊了 现在是 姓名一样的 都改了'''
 
     # 5. 删除学生信息
     def remove_student(self):
         print(" ==> 刪除")
-        # find_list = self.find_student_by_name()
-        # if find_list:
-        #     self.model.beauty_print(find_list)
-        #     index = int(input("remove ID > "))
-        #     print("\n remove 的是 >>>")
-        #     student = find_list[index]
-        #     self.model.beauty_print([student])
-        #     self.data.remove(student)
-        #     print("remove success")
         with self.con:
             print("--------------------sql_delete--------------------")
             find_name = input("查找对应姓名")
@@ -350,12 +256,12 @@ class StudentSystem:
             print(data_find_only)  # sql run end
             # 格式化打印
             for index, list_sql in enumerate(data_find_only):
-                print(f"信息 ==>序号: {index + 1}  姓名: {list_sql[1]:6} 性别: {list_sql[2]} 生日: {list_sql[3]}")
+                print(
+                    f"信息 ==>序号: {index + 1}  姓名: {list_sql['name']:6} 性别: {list_sql['sex']} 生日: {list_sql['birthday']}")
                 print("--------------------")
             # 输入准确信息
-            name = input("new name : ").strip()
-            sql_delete = f"DELETE FROM StudentINFO where name = '{name}'"
-            data_delete_only = self.con.execute(sql_delete).fetchall()
+            name = input("delete name : ").strip()
+            data_delete_only = self.con.execute(self.sql.delete_only(name)).fetchall()
             print(data_delete_only)  # sql run end
             print("delete success")
             ''' 脑袋疼 绕迷糊了 现在是 姓名一样的 都删了'''

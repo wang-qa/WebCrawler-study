@@ -11,7 +11,15 @@ student_date = [
 class DB:
     def __init__(self):
         # 数据库 初始化连接
+        # self.con = sl.connect('my-test.db').cursor()  # 轻量级 如果不存在则自动创建并连接
+        def dict_factory(cursor, row):
+            d = {}
+            for index, col in enumerate(cursor.description):
+                d[col[0]] = row[index]
+            return d
+
         self.con = sl.connect('my-test.db')  # 轻量级 如果不存在则自动创建并连接
+        self.con.row_factory = dict_factory
 
     # 数据库 创建 表
     def new_table(self):
@@ -45,11 +53,15 @@ class DB:
         with self.con:
             data = self.con.execute("SELECT * FROM USER ")
             for row in data:
+                print("--------- 查询结果 ---------")
                 print(row)
+
+                print(row['name'], row['age'])
 
 
 if __name__ == '__main__':
     db = DB()
     a = sl.connect('my-test.db')
-    db.new_table()
-    db.add_data()
+    # db.new_table()
+    # db.add_data()
+    db.select_table()
